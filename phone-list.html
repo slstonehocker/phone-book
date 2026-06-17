@@ -66,25 +66,30 @@ button{font-family:inherit;cursor:pointer;border-radius:6px;font-size:13px;font-
 // CSV column names expected from the company exports
 const EC_NAME='Name', EC_COMPANY='Company', EC_BRANCH='Branch', EC_EXT='Extension', EC_ECLIPSE='Eclipse', EC_CELL='Cell #', EC_EMAIL='Email';
 const BC_DBA='DBA', BC_CODE='Branch Code', BC_BRANCH='Branch', BC_ADDR='Address', BC_CITY='City', BC_STATE='State', BC_ZIP='Zip Code', BC_PHONE='Phone', BC_FAX='Fax';
-
-    const LOGO_PATHS = {
-    "DBC Irrigation Supply": "logos/dbc.png",
-    "Neumark Irrigation Supply": "logos/neumark.png",
-    "Pipeco Irrigation Supply": "logos/pipeco.png",
-    "Texas Irrigation Supply": "logos/Texas.png"
+const LOGO_PATHS = {
+    "DBC Irrigation Supply": "dbc.png",
+    "Neumark Irrigation Supply": "neumark.png",
+    "Pipeco Irrigation Supply": "pipeco.png",
+    "Texas Irrigation Supply": "Texas.png"
 };
 
 const LOGOS = {};
 
 async function loadImage(path) {
-    const response = await fetch(path);
-    const blob = await response.blob();
+  const response = await fetch(path);
 
-    return new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.readAsDataURL(blob);
-    });
+  if (!response.ok) {
+    console.warn("Missing logo:", path);
+    return null;
+  }
+
+  const blob = await response.blob();
+
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
 }
 
 async function loadLogos() {
@@ -401,6 +406,7 @@ if (logo) {
   const logoW = props.width * ratio;
   const logoH = props.height * ratio;
 
+    
   doc.addImage(
     logo,
     "PNG",
@@ -434,8 +440,7 @@ function drawWatermark(){
   const ratio = Math.min(
     maxW / props.width,
     maxH / props.height
-  );
-
+);
   const w = props.width * ratio;
   const h = props.height * ratio;
 
