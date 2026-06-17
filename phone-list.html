@@ -511,82 +511,94 @@ function drawFtr(pn){
     }
     y+=12;
   }
-function drawPerson(row,showCode){
-  ensure(ROW);
+function drawPerson(row, showCode) {
+    ensure(ROW);
 
-  const x=getX();
-  const rawName=trunc(row[EC_NAME],28);
-  const code=showCode?getBranchCode(row):'';
-  const displayName=code ? rawName+' ('+code+')' : rawName;
+    const x = getX();
+    const rawName = trunc(row[EC_NAME], 28);
+    const code = showCode ? getBranchCode(row) : '';
+    const displayName = code ? rawName + ' (' + code + ')' : rawName;
 
-  const ext=parseExt(row[EC_EXT]);
-  const empPhone=parsePhone(row[EC_EXT]);
-  const cellPhone=clean(row[EC_CELL]);
+    const ext = parseExt(row[EC_EXT]);
+    const officePhone = parsePhone(row[EC_EXT]);
+    const cellPhone = clean(row[EC_CELL]);
 
-  let phone=empPhone;
+    let phone = '';
 
-  // Ops/internal employees: use Cell # when available
-  if(isOps(row) && cellPhone){
-    phone=cellPhone;
-  }
+    if (isOps(row)) {
+        // Operations page:
+        // Prefer Cell #, otherwise use office/direct number.
+        phone = cellPhone || officePhone;
+    } else {
+        // Store pages:
+        const br = getBranchRow(row);
+        const branchPhone = br ? clean(br[BC_PHONE]) : '';
 
-  // Store employees: hide the right-side phone only when it matches the branch phone
-  if(!isOps(row)){
-    const br=getBranchRow(row);
-    const branchPhone=br ? clean(br[BC_PHONE]) : '';
+        const officeDigits = normalizePhone(officePhone);
+        const branchDigits = normalizePhone(branchPhone);
 
-    if(samePhone(empPhone,branchPhone)){
-      phone='';
+        // Only show the employee number if it's different from the branch phone.
+        if (
+            officeDigits &&
+            officeDigits !== branchDigits
+        ) {
+            phone = officePhone;
+        } else if (cellPhone) {
+            // If office matches the branch, but they have a cell, show the cell.
+            phone = cellPhone;
+        }
     }
-  }
 
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
 
-  const extColW=34;
+    const extColW = 34;
 
-  doc.setTextColor(100,100,100);
-  if(ext){
-    doc.text(ext,x+3,y);
-  }
-
-  const nameX=x+extColW;
-
-  doc.setTextColor(40,40,40);
-  doc.text(displayName,nameX,y);
-
-  const email=clean(row[EC_EMAIL]);
-  if(email){
-    doc.link(
-      nameX,
-      y-7,
-      doc.getTextWidth(displayName),
-      10,
-      {url:'mailto:'+email}
-    );
-  }
-
-  const nameW=doc.getTextWidth(displayName);
-  const phoneStr=phone&&phone.length>5 ? phone : '';
-  const phoneW=phoneStr ? doc.getTextWidth(phoneStr)+2 : 0;
-
-  const dotsStart=nameX+nameW+3;
-  const dotsEnd=x+COLW-phoneW-4;
-
-  doc.setDrawColor(180,180,180);
-  if(dotsEnd>dotsStart+6){
-    for(let dx=dotsStart;dx<dotsEnd;dx+=3){
-      doc.circle(dx,y-1.5,.4,'F');
-    }
-  }
-
-  if(phoneStr){
-    doc.setFontSize(7);
     doc.setTextColor(100,100,100);
-    doc.text(phoneStr,x+COLW-3,y,{align:'right'});
-  }
 
-  y+=ROW;
+    if (ext) {
+        doc.text(ext, x + 3, y);
+    }
+
+    const nameX = x + extColW;
+
+    doc.setTextColor(40,40,40);
+    doc.text(displayName, nameX, y);
+
+    // Hyperlink name to email
+    const email = clean(row[EC_EMAIL]);
+    if (email) {
+        doc.link(
+            nameX,
+            y - 7,
+            doc.getTextWidth(displayName),
+            10,
+            { url: 'mailto:' + email }
+        );
+    }
+
+    const nameW = doc.getTextWidth(displayName);
+    const phoneStr = phone && phone.length > 5 ? phone : '';
+    const phoneW = phoneStr ? doc.getTextWidth(phoneStr) + 2 : 0;
+
+    const dotsStart = nameX + nameW + 3;
+    const dotsEnd = x + COLW - phoneW - 4;
+
+    doc.setDrawColor(180,180,180);
+
+    if (dotsEnd > dotsStart + 6) {
+        for (let dx = dotsStart; dx < dotsEnd; dx += 3) {
+            doc.circle(dx, y - 1.5, .4, 'F');
+        }
+    }
+
+    if (phoneStr) {
+        doc.setFontSize(7);
+        doc.setTextColor(100,100,100);
+        doc.text(phoneStr, x + COLW - 3, y, { align: 'right' });
+    }
+
+    y += ROW;
 }
 
   // Page 1: all internal/ops/sales departments found in the employee CSV.
