@@ -511,66 +511,82 @@ function drawFtr(pn){
     }
     y+=12;
   }
- function drawPerson(row,showCode){
-    ensure(ROW);
+function drawPerson(row,showCode){
+  ensure(ROW);
 
-    const x=getX();
-    const rawName=trunc(row[EC_NAME],28);
-    const code=showCode?getBranchCode(row):'';
-    const displayName=code ? rawName+' ('+code+')' : rawName;
+  const x=getX();
+  const rawName=trunc(row[EC_NAME],28);
+  const code=showCode?getBranchCode(row):'';
+  const displayName=code ? rawName+' ('+code+')' : rawName;
 
-    const ext=parseExt(row[EC_EXT]);
-    const phone=parsePhone(row[EC_EXT]);
+  const ext=parseExt(row[EC_EXT]);
+  const empPhone=parsePhone(row[EC_EXT]);
+  const cellPhone=clean(row[EC_CELL]);
 
-    doc.setFont('helvetica','normal');
-    doc.setFontSize(7.5);
+  let phone=empPhone;
 
-   doc.setTextColor(100,100,100);
+  // Ops/internal employees: use Cell # when available
+  if(isOps(row) && cellPhone){
+    phone=cellPhone;
+  }
 
-const extColW = 34; // fixed space reserved for extension
+  // Store employees: hide the right-side phone only when it matches the branch phone
+  if(!isOps(row)){
+    const br=getBranchRow(row);
+    const branchPhone=br ? clean(br[BC_PHONE]) : '';
 
-if(ext) {
-  doc.text(ext, x+3, y);
-}
-
-const nameX = x + extColW;
-    // Draw name
-    doc.setTextColor(40,40,40);
-    doc.text(displayName,nameX,y);
-
-    // Hyperlink the name to email
-    const email=clean(row[EC_EMAIL]);
-    if(email){
-        doc.link(
-            nameX,
-            y-7,
-            doc.getTextWidth(displayName),
-            10,
-            {url:'mailto:'+email}
-        );
+    if(samePhone(empPhone,branchPhone)){
+      phone='';
     }
+  }
 
-    const nameW=doc.getTextWidth(displayName);
-    const phoneStr=phone&&phone.length>5?phone:'';
-    const phoneW=phoneStr?doc.getTextWidth(phoneStr)+2:0;
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7.5);
 
-    const dotsStart=nameX+nameW+3;
-    const dotsEnd=x+COLW-phoneW-4;
+  const extColW=34;
 
-    doc.setDrawColor(180,180,180);
-    if(dotsEnd>dotsStart+6){
-        for(let dx=dotsStart;dx<dotsEnd;dx+=3){
-            doc.circle(dx,y-1.5,.4,'F');
-        }
+  doc.setTextColor(100,100,100);
+  if(ext){
+    doc.text(ext,x+3,y);
+  }
+
+  const nameX=x+extColW;
+
+  doc.setTextColor(40,40,40);
+  doc.text(displayName,nameX,y);
+
+  const email=clean(row[EC_EMAIL]);
+  if(email){
+    doc.link(
+      nameX,
+      y-7,
+      doc.getTextWidth(displayName),
+      10,
+      {url:'mailto:'+email}
+    );
+  }
+
+  const nameW=doc.getTextWidth(displayName);
+  const phoneStr=phone&&phone.length>5 ? phone : '';
+  const phoneW=phoneStr ? doc.getTextWidth(phoneStr)+2 : 0;
+
+  const dotsStart=nameX+nameW+3;
+  const dotsEnd=x+COLW-phoneW-4;
+
+  doc.setDrawColor(180,180,180);
+  if(dotsEnd>dotsStart+6){
+    for(let dx=dotsStart;dx<dotsEnd;dx+=3){
+      doc.circle(dx,y-1.5,.4,'F');
     }
+  }
 
-    if(phoneStr){
-        doc.setFontSize(7);
-        doc.setTextColor(100,100,100);
-        doc.text(phoneStr,x+COLW-3,y,{align:'right'});
-    }
+  if(phoneStr){
+    doc.setFontSize(7);
+    doc.setTextColor(100,100,100);
+    doc.text(phoneStr,x+COLW-3,y,{align:'right'});
+  }
 
-    y+=ROW;
+  y+=ROW;
 }
 
   // Page 1: all internal/ops/sales departments found in the employee CSV.
