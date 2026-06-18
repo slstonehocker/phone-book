@@ -67,10 +67,10 @@ button{font-family:inherit;cursor:pointer;border-radius:6px;font-size:13px;font-
 const EC_NAME='Name', EC_COMPANY='Company', EC_BRANCH='Branch', EC_EXT='Extension', EC_ECLIPSE='Eclipse', EC_CELL='Cell #', EC_EMAIL='Email';
 const BC_DBA='DBA', BC_CODE='Branch Code', BC_BRANCH='Branch', BC_ADDR='Address', BC_CITY='City', BC_STATE='State', BC_ZIP='Zip Code', BC_PHONE='Phone', BC_FAX='Fax';
 const LOGO_PATHS = {
-  "DBC Irrigation Supply": "https://slstonehocker.github.io/phone-book/dbc.png",
-  "Neumark Irrigation Supply": "https://slstonehocker.github.io/phone-book/neumark.png",
-  "Pipeco Irrigation Supply": "https://slstonehocker.github.io/phone-book/pipeco.png",
-  "Texas Irrigation Supply": "https://slstonehocker.github.io/phone-book/Texas.png"
+    "DBC Irrigation Supply": "https://slstonehocker.github.io/phone-book/logos/DBCtransparent.png",
+    "Neumark Irrigation Supply": "https://slstonehocker.github.io/phone-book/logos/nuemarktransparent.png",
+    "Pipeco Irrigation Supply": "https://slstonehocker.github.io/phone-book/logos/pipecotransparent.png",
+    "Texas Irrigation Supply": "https://slstonehocker.github.io/phone-book/logos/texastransparent.png"
 };
 const LOGOS = {};
 
@@ -394,27 +394,7 @@ function generate(){
   function getX(){ return ML+ci*(COLW+COLGAP); }
   function drawHdr(title,company,color){
     const [r,g,b]=color; doc.setFillColor(r,g,b); doc.rect(0,0,PW,HDRH,'F');
-const logo = LOGOS[company];
 
-if (logo) {
-  const props = doc.getImageProperties(logo);
-  const maxW = 150;
-  const maxH = 40;
-
-  const ratio = Math.min(maxW / props.width, maxH / props.height);
-  const logoW = props.width * ratio;
-  const logoH = props.height * ratio;
-
-    
-  doc.addImage(
-    logo,
-    "PNG",
-    10,
-    (HDRH - logoH) / 2,
-    logoW,
-    logoH
-  );
-}
     doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(255,255,255);
    const headerTitle =
     title === "Operations / Internal / Sales"
@@ -427,50 +407,39 @@ doc.text(headerTitle, PW/2, 30, {align:'center'});
     
     
     
-function drawWatermark(){
-  const logo = LOGOS[curCompany];
-  if (!logo) return;
+function drawWatermark() {
 
-  const props = doc.getImageProperties(logo);
+    const logo = LOGOS[curCompany];
+    if (!logo) return;
 
-  const maxW = 150;
-  const maxH = 95;
+    const props = doc.getImageProperties(logo);
 
-  const ratio = Math.min(
-    maxW / props.width,
-    maxH / props.height
-);
-  const w = props.width * ratio;
-  const h = props.height * ratio;
+    // Large centered watermark
+    const maxW = 470;
+    const maxH = 470;
 
-  const x = PW - MR - w - 20;
-  const yPos = PH - MB - h - 35;
+    const ratio = Math.min(
+        maxW / props.width,
+        maxH / props.height
+    );
 
-  doc.addImage(logo, "PNG", x, yPos, w, h);
+    const w = props.width * ratio;
+    const h = props.height * ratio;
+
+    const x = (PW - w) / 2;
+    const y = (PH - h) / 2;
+
+    doc.addImage(
+        logo,
+        "PNG",
+        x,
+        y,
+        w,
+        h
+    );
 }
     
-    function drawPageLogo(){
-  const logo = LOGOS[curCompany];
-  if (!logo) return;
 
-  const props = doc.getImageProperties(logo);
-
-  const maxW = 150;
-  const maxH = 75;
-
-  const ratio = Math.min(maxW / props.width, maxH / props.height);
-  const logoW = props.width * ratio;
-  const logoH = props.height * ratio;
-
-  doc.addImage(
-    logo,
-    "PNG",
-    PW - MR - logoW - 8,
-    PH - MB - logoH - 12,
-    logoW,
-    logoH
-  );
-}
     
 function drawFtr(pn){
 
@@ -486,10 +455,20 @@ function drawFtr(pn){
     doc.text("Page "+pn,PW/2,PH-MB,{align:"center"});
     doc.text(new Date().toLocaleDateString(),PW-MR,PH-MB,{align:"right"});
 }
-  function nextCol(){
-    if(ci<NCOLS-1){ci++;y=CTOP;}
-    else{drawFtr(pageNum);doc.addPage();pageNum++;drawHdr(curTitle+' (continued)',curCompany,curColor);ci=0;y=CTOP;}
+ function nextCol(){
+  if(ci<NCOLS-1){
+    ci++;
+    y=CTOP;
+  } else {
+    drawFtr(pageNum);
+    doc.addPage();
+    pageNum++;
+    drawHdr(curTitle+' (continued)',curCompany,curColor);
+    ci=0;
+    y=CTOP;
+    drawWatermark();
   }
+}
   function ensure(h){ if(y+h>CBOT) nextCol(); }
   function drawSecHdr(label,code,color){
     ensure(SH+ROW*3); if(y>CTOP+2)y+=4; const x=getX(),[r,g,b]=color;
