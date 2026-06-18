@@ -388,7 +388,7 @@ function generate(){
   const PW=792,PH=612,ML=28,MR=28,MT=28,MB=28;
   const CW=PW-ML-MR,NCOLS=4,COLW=(CW-(NCOLS-1)*10)/NCOLS,COLGAP=10;
   const HDRH=50,CTOP=MT+HDRH+8,CBOT=PH-MB-18;
-  const SH=15,AH=8.5,IH=9,ROW=12,SG=4;
+ const SH=14, AH=7.5, IH=8, ROW=11, SG=2;
   let pageNum=0,ci=0,y=CTOP,curTitle='',curCompany='',curColor=[139,26,26];
 
   function getX(){ return ML+ci*(COLW+COLGAP); }
@@ -481,13 +481,13 @@ function drawFtr(pn){
     doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(255,255,255);
     doc.text(trunc(label,22),x+5,y+12);if(code){
   doc.setFontSize(8);
-  doc.text(code, x+COLW-4, y+12, {align:'right'});
+  doc.text(code, x+COLW-4, y+10, {align:'right'});
 } y+=SH+9;
   }
   function drawBranchInfo(br){
     if(!br)return; const x=getX();
     const addr=clean(br[BC_ADDR]),city=clean(br[BC_CITY]),state=clean(br[BC_STATE]),zip=clean(br[BC_ZIP]),phone=clean(br[BC_PHONE]),fax=clean(br[BC_FAX]);
-    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(60,60,60);
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.3); doc.setTextColor(60,60,60);
     if(addr){doc.text(addr,x+4,y);y+=AH;}
     const cl=[city,state,zip].filter(Boolean).join(', '); if(cl){doc.text(cl,x+4,y);y+=AH;}
     if(phone||fax){ y+=2;
@@ -549,7 +549,7 @@ doc.setFont(
     "helvetica",
     isManager ? "bold" : "normal"
 );
-    doc.setFontSize(7.5);
+    doc.setFontSize(6.5);
 
     const extColW = 34;
 
@@ -623,7 +623,15 @@ drawWatermark();
     return a.localeCompare(b);
   }).forEach(dept=>{
     const rows=deptMap[dept].sort((a,b)=>clean(a[EC_NAME]).localeCompare(clean(b[EC_NAME])));
-    drawSecHdr(dept,'',[70,70,70]); rows.forEach(r=>drawPerson(r,true)); y+=SG;
+   const deptH = SH + 9 + rows.length * ROW + SG + 6;
+
+if (y + deptH > CBOT) {
+  nextCol();
+}
+
+drawSecHdr(dept,'',[70,70,70]);
+rows.forEach(r=>drawPerson(r,true));
+y+=SG;
   });
   drawFtr(pageNum);
 
