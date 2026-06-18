@@ -67,10 +67,10 @@ button{font-family:inherit;cursor:pointer;border-radius:6px;font-size:13px;font-
 const EC_NAME='Name', EC_COMPANY='Company', EC_BRANCH='Branch', EC_EXT='Extension', EC_ECLIPSE='Eclipse', EC_CELL='Cell #', EC_EMAIL='Email';
 const BC_DBA='DBA', BC_CODE='Branch Code', BC_BRANCH='Branch', BC_ADDR='Address', BC_CITY='City', BC_STATE='State', BC_ZIP='Zip Code', BC_PHONE='Phone', BC_FAX='Fax';
 const LOGO_PATHS = {
-    "DBC Irrigation Supply": "logos/DBCtransparent.png",
-    "Neumark Irrigation Supply": "logos/nuemarktransparent.png",
-    "Pipeco Irrigation Supply": "logos/pipecotransparent.png",
-    "Texas Irrigation Supply": "logos/texastransparent.png"
+    "DBC Irrigation Supply": "DBCtransparent.png",
+    "Neumark Irrigation Supply": "nuemarktransparent.png",
+    "Pipeco Irrigation Supply": "pipecotransparent.png",
+    "Texas Irrigation Supply": "texastransparent.png"
 };
 const LOGOS = {};
 
@@ -395,14 +395,19 @@ function generate(){
   function drawHdr(title,company,color){
     const [r,g,b]=color; doc.setFillColor(r,g,b); doc.rect(0,0,PW,HDRH,'F');
 
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(255,255,255);
    const headerTitle =
     title === "Operations / Internal / Sales"
         ? title
         : (company ? company + " — " : "") + title;
 
 doc.text(headerTitle, PW/2, 30, {align:'center'});
-    doc.setFontSize(8); doc.text(new Date().toLocaleDateString(),PW-MR,30,{align:'right'});
+   const dateText = new Date().toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric'
+});
+
+doc.text(dateText, PW - MR, 30, { align: 'right' });
   }
     
     
